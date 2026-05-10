@@ -1,15 +1,61 @@
 let pwData = JSON.parse(localStorage.getItem("box_pw_data")) || [];
 let activeItem = null;
 let deleteCounter = 0;
+let currentTab = 'home';
 
-function showPage(id) {
+function showPage(id, isBack = false) {
+    currentTab = id;
     document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-    const target = document.getElementById(id + "Page");
-    if (target) target.classList.remove('hidden');
+    document.getElementById(id + "Page").classList.remove('hidden');
     if (id === 'password') renderList();
     resetDeleteBtn();
+    if (!isBack) window.history.pushState({ page: id }, "");
 }
 
+// 物理返回/滑动手势拦截 (保持原有架构)
+window.onpopstate = function() {
+    const modal = document.getElementById("pwModal");
+    if (!modal.classList.contains("hidden")) {
+        closeModals();
+        window.history.pushState({ page: currentTab }, ""); 
+        return;
+    }
+    if (currentTab === 'pwDetail') showPage('password', true);
+    else if (currentTab === 'password') showPage('home', true);
+};
+
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
+document.addEventListener('touchend', e => {
+    if (e.changedTouches[0].screenX - touchStartX > 100) window.history.back();
+});
+
+// 点击外部重置删除按钮 (保持原有架构)
+document.addEventListener('click', (e) => {
+    const delBtn = document.getElementById("btnDelPw");
+    if (deleteCounter === 1 && e.target !== delBtn) resetDeleteBtn();
+});
+
+function resetDeleteBtn() {
+    deleteCounter = 0;
+    const btn = document.getElementById("btnDelPw");
+    if(btn) { btn.innerText = "删除密码"; btn.classList.remove("warning"); }
+}
+
+document.getElementById("btnDelPw").onclick = function(e) {
+    e.stopPropagation();
+    if (deleteCounter === 0) {
+        deleteCounter = 1;
+        this.innerText = "确定删除";
+        this.classList.add("warning");
+    } else {
+        pwData = pwData.filter(i => i.id !== activeItem.id);
+        localStorage.setItem("box_pw_data", JSON.stringify(pwData));
+        window.history.back(); 
+    }
+};
+
+// 渲染列表
 function renderList(filter = "") {
     const container = document.getElementById("pwListContainer");
     container.innerHTML = "";
@@ -20,68 +66,84 @@ function renderList(filter = "") {
         div.innerHTML = `<strong>${item.site}</strong>`;
         div.onclick = () => {
             activeItem = item;
-            document.getElementById("viewPwTitle").innerText = item.site;
-            document.getElementById("viewAcc").innerText = item.acc;
-            document.getElementById("viewPass").innerText = item.pass;
+            renderDetails(item);
             showPage('pwDetail');
         };
         container.appendChild(div);
     });
 }
 
-function resetDeleteBtn() {
-    deleteCounter = 0;
-    const btn = document.getElementById("btnDelPw");
-    if(btn) {
-        btn.innerText = "删除密码";
-        btn.classList.remove("warning");
+// 渲染详情逻辑：按需显示手机和邮箱
+function renderDetails(item) {
+    document.getElementById("viewPwTitle").innerText = item.site;
+    document.getElementById("viewAcc").innerText = item.acc;
+    document.getElementById("viewPass").innerText = item.pass;
+
+    // 手机号逻辑
+    const phoneArea = document.getElementById("detailPhoneArea");
+    if (item.phone && item.phone.trim() !== "") {
+        document.getElementById("viewPhone").innerText = item.phone;
+        phoneArea.classList.remove("hidden");
+    } else {
+        phoneArea.classList.add("hidden");
+    }
+
+    // 邮箱逻辑
+    const emailArea = document.getElementById("detailEmailArea");
+    if (item.email && item.email.trim() !== "") {
+        document.getElementById("viewEmail").innerText = item.email;
+        emailArea.classList.remove("hidden");
+    } else {
+        emailArea.classList.add("hidden");
     }
 }
-
-document.getElementById("btnDelPw").onclick = function() {
-    if (deleteCounter === 0) {
-        deleteCounter = 1;
-        this.innerText = "再次点击确认删除";
-        this.classList.add("warning");
-        if (navigator.vibrate) navigator.vibrate(60);
-    } else {
-        pwData = pwData.filter(i => i.id !== activeItem.id);
-        localStorage.setItem("box_pw_data", JSON.stringify(pwData));
-        showPage('password');
-    }
-};
 
 function closeModals() {
     document.getElementById("pwModal").classList.add("hidden");
 }
 
+// 保存逻辑
 document.getElementById("btnSavePw").onclick = function() {
     const s = document.getElementById("inPwSite").value.trim();
     const a = document.getElementById("inPwAcc").value.trim();
     const p = document.getElementById("inPwPass").value.trim();
-    if(!s || !a || !p) return;
+    const ph = document.getElementById("inPwPhone").value.trim(); // 新增
+    const em = document.getElementById("inPwEmail").value.trim(); // 新增
+
+    if(!s || !a || !p) return; // 前三项必填
+
+    const newData = { site: s, acc: a, pass: p, phone: ph, email: em };
+
     if(activeItem) {
-        activeItem.site = s; activeItem.acc = a; activeItem.pass = p;
+        Object.assign(activeItem, newData);
     } else {
-        pwData.push({id: Date.now(), site: s, acc: a, pass: p});
+        pwData.push({ id: Date.now(), ...newData });
     }
+    
     localStorage.setItem("box_pw_data", JSON.stringify(pwData));
     closeModals();
-    showPage('password');
+    
+    if (currentTab === 'pwDetail') {
+        renderDetails(activeItem);
+    } else {
+        showPage('password', true);
+    }
 };
 
 document.getElementById("btnGoPassword").onclick = () => showPage('password');
-document.getElementById("btnBackHome").onclick = () => showPage('home');
-document.getElementById("btnBackPwList").onclick = () => showPage('password');
-document.getElementById("btnCancelModal").onclick = closeModals;
+document.getElementById("btnBackHome").onclick = () => window.history.back();
+document.getElementById("btnBackPwList").onclick = () => window.history.back();
+document.getElementById("btnCancelModal").onclick = () => window.history.back();
 
 document.getElementById("btnAddPw").onclick = function() {
     activeItem = null;
     document.getElementById("pwModalTitle").innerText = "添加密码";
-    document.getElementById("inPwSite").value = ""; 
-    document.getElementById("inPwAcc").value = ""; 
-    document.getElementById("inPwPass").value = "";
+    // 清空所有输入框
+    ["inPwSite", "inPwAcc", "inPwPass", "inPwPhone", "inPwEmail"].forEach(id => {
+        document.getElementById(id).value = "";
+    });
     document.getElementById("pwModal").classList.remove("hidden");
+    window.history.pushState({ modal: 'open' }, "");
 };
 
 document.getElementById("btnEditPw").onclick = function() {
@@ -89,7 +151,10 @@ document.getElementById("btnEditPw").onclick = function() {
     document.getElementById("inPwSite").value = activeItem.site;
     document.getElementById("inPwAcc").value = activeItem.acc;
     document.getElementById("inPwPass").value = activeItem.pass;
+    document.getElementById("inPwPhone").value = activeItem.phone || "";
+    document.getElementById("inPwEmail").value = activeItem.email || "";
     document.getElementById("pwModal").classList.remove("hidden");
+    window.history.pushState({ modal: 'open' }, "");
 };
 
 document.getElementById("pwSearchInput").oninput = (e) => renderList(e.target.value);
@@ -103,7 +168,7 @@ function copyText(id) {
     });
 }
 
-window.onload = function() {
-    showPage('home');
-    closeModals();
+window.onload = () => {
+    window.history.replaceState({ page: 'home' }, "");
+    showPage('home', true);
 };
