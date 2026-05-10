@@ -1,0 +1,55 @@
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { background: #f8f9fa; font-family: -apple-system, sans-serif; padding: 20px; color: #1a1a1a; }
+
+.hidden { display: none !important; }
+
+/* 首页 */
+header h1 { margin: 20px 0 40px; font-size: 36px; font-weight: 800; text-align: center; }
+.main-card-row { width: 100%; height: 120px; background: #fff; border-radius: 32px; margin-bottom: 20px; display: flex; align-items: center; padding: 0 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); cursor: pointer; }
+.main-card-row span { font-size: 22px; font-weight: 800; margin-left: 20px; }
+.main-card-row i { font-size: 30px; }
+
+/* 导航栏 */
+.top-bar { display: flex; align-items: center; justify-content: space-between; height: 60px; position: relative; margin-bottom: 20px; }
+.top-bar h2 { position: absolute; width: 100%; text-align: center; font-size: 22px; font-weight: 800; }
+.btn-back, #btnEditPw { z-index: 2; border: none; background: transparent; font-size: 24px; padding: 10px; cursor: pointer; }
+.btn-icon-plus { z-index: 2; width: 50px; height: 50px; background: #000; color: #fff; border-radius: 16px; border: none; font-size: 20px; cursor: pointer; }
+
+/* 搜索框 */
+.search-section { display: flex; justify-content: center; margin-bottom: 25px; }
+.search-bar { background: #eee; width: 92%; border-radius: 22px; padding: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.search-bar input { background: transparent; border: none; outline: none; font-size: 18px; text-align: center; width: 80%; }
+
+/* 列表卡片 */
+.pw-card { background: #fff; border-radius: 32px; padding: 50px 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.04); cursor: pointer; }
+.pw-card strong { font-size: 28px; font-weight: 900; }
+
+/* 详情展示 */
+.info-group { margin-bottom: 25px; }
+.info-group label { color: #999; margin-left: 12px; font-size: 14px; margin-bottom: 8px; display: block; }
+.info-value { background: #fff; border-radius: 22px; padding: 22px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
+.info-value span { font-size: 20px; font-weight: 700; }
+.delete-btn-step { width: 100%; padding: 22px; background: #fff; border: 2.5px solid #000; border-radius: 25px; margin-top: 40px; font-weight: 800; font-size: 20px; transition: 0.3s; cursor: pointer; }
+.delete-btn-step.warning { background: #ff4d4f; color: #fff; border-color: #ff4d4f; }
+
+/* 弹窗美化 (针对你的反馈进行了重构) */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(5px); }
+.modal-box { background: #fff; width: 90%; max-width: 400px; border-radius: 38px; padding: 40px 30px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+
+/* 解决“太接近”的问题 */
+.modal-box h3 { font-size: 26px; font-weight: 900; margin-bottom: 35px; color: #000; letter-spacing: 1px; }
+
+.modal-box input { 
+    width: 100%; padding: 18px; background: #f7f7f7; border: 2px solid transparent; 
+    border-radius: 20px; margin-bottom: 15px; font-size: 18px; text-align: center; 
+    transition: all 0.3s ease; outline: none;
+}
+.modal-box input:focus { background: #fff; border-color: #000; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+.modal-actions { display: flex; gap: 15px; margin-top: 20px; }
+.action-btn { flex: 1; padding: 20px; border: none; border-radius: 22px; font-weight: 800; font-size: 18px; cursor: pointer; transition: transform 0.1s; }
+.action-btn:active { transform: scale(0.96); }
+.cancel { background: #f0f0f0; color: #666; }
+.save { background: #000; color: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: #fff; padding: 12px 25px; border-radius: 30px; opacity: 0; transition: 0.3s; pointer-events: none; }

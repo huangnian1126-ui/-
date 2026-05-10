@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>密码保险箱</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="homePage" class="page">
+        <header><h1>SafeBox</h1></header>
+        <div class="main-card-row" id="btnGoPassword">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>我的密码本</span>
+        </div>
+    </div>
+
+    <div id="passwordPage" class="page hidden">
+        <div class="top-bar">
+            <i class="fa-solid fa-chevron-left btn-back" id="btnBackHome"></i>
+            <h2>密码列表</h2>
+            <button id="btnAddPw" class="btn-icon-plus"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <div class="search-section">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="pwSearchInput" placeholder="搜索项目名称">
+            </div>
+        </div>
+        <div id="pwListContainer"></div>
+    </div>
+
+    <div id="pwDetailPage" class="page hidden">
+        <div class="top-bar">
+            <i class="fa-solid fa-chevron-left btn-back" id="btnBackPwList"></i>
+            <h2 id="viewPwTitle">详情</h2>
+            <button id="btnEditPw"><i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+        <div class="details-container">
+            <div class="info-group"><label>账号</label><div class="info-value"><span id="viewAcc"></span><i class="fa-regular fa-copy" onclick="copyText('viewAcc')"></i></div></div>
+            <div class="info-group"><label>密码</label><div class="info-value"><span id="viewPass"></span><i class="fa-regular fa-copy" onclick="copyText('viewPass')"></i></div></div>
+            <button id="btnDelPw" class="delete-btn-step">删除密码</button>
+        </div>
+    </div>
+
+    <div id="pwModal" class="modal hidden">
+        <div class="modal-box">
+            <h3 id="pwModalTitle">添加密码</h3>
+            <input type="text" id="inPwSite" placeholder="项目名称">
+            <input type="text" id="inPwAcc" placeholder="账号">
+            <input type="text" id="inPwPass" placeholder="密码">
+            <div class="modal-actions">
+                <button id="btnCancelModal" class="action-btn cancel">取消</button>
+                <button id="btnSavePw" class="action-btn save">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">已复制到剪贴板</div>
+    <script src="script.js"></script>
+</body>
+</html>
