@@ -3,16 +3,24 @@ let activeItem = null;
 let deleteCounter = 0;
 let currentTab = 'home';
 
+// 页面切换
 function showPage(id, isBack = false) {
     currentTab = id;
     document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
     document.getElementById(id + "Page").classList.remove('hidden');
-    if (id === 'password') renderList();
+    
+    if (id === 'password') {
+        // --- 核心修复：进入列表页时清空搜索框 ---
+        const searchInput = document.getElementById("pwSearchInput");
+        if (searchInput) searchInput.value = ""; 
+        renderList(); 
+    }
+    
     resetDeleteBtn();
     if (!isBack) window.history.pushState({ page: id }, "");
 }
 
-// 物理返回/滑动手势拦截 (保持原有架构)
+// 物理返回键 & 手势拦截
 window.onpopstate = function() {
     const modal = document.getElementById("pwModal");
     if (!modal.classList.contains("hidden")) {
@@ -24,13 +32,14 @@ window.onpopstate = function() {
     else if (currentTab === 'password') showPage('home', true);
 };
 
+// 左右滑返回
 let touchStartX = 0;
 document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
 document.addEventListener('touchend', e => {
     if (e.changedTouches[0].screenX - touchStartX > 100) window.history.back();
 });
 
-// 点击外部重置删除按钮 (保持原有架构)
+// 全局点击：用于取消删除状态
 document.addEventListener('click', (e) => {
     const delBtn = document.getElementById("btnDelPw");
     if (deleteCounter === 1 && e.target !== delBtn) resetDeleteBtn();
@@ -42,6 +51,7 @@ function resetDeleteBtn() {
     if(btn) { btn.innerText = "删除密码"; btn.classList.remove("warning"); }
 }
 
+// 删除逻辑
 document.getElementById("btnDelPw").onclick = function(e) {
     e.stopPropagation();
     if (deleteCounter === 0) {
@@ -55,7 +65,7 @@ document.getElementById("btnDelPw").onclick = function(e) {
     }
 };
 
-// 渲染列表
+// 列表渲染
 function renderList(filter = "") {
     const container = document.getElementById("pwListContainer");
     container.innerHTML = "";
@@ -73,13 +83,12 @@ function renderList(filter = "") {
     });
 }
 
-// 渲染详情逻辑：按需显示手机和邮箱
+// 详情渲染（按需显示手机和邮箱）
 function renderDetails(item) {
     document.getElementById("viewPwTitle").innerText = item.site;
     document.getElementById("viewAcc").innerText = item.acc;
     document.getElementById("viewPass").innerText = item.pass;
 
-    // 手机号逻辑
     const phoneArea = document.getElementById("detailPhoneArea");
     if (item.phone && item.phone.trim() !== "") {
         document.getElementById("viewPhone").innerText = item.phone;
@@ -88,7 +97,6 @@ function renderDetails(item) {
         phoneArea.classList.add("hidden");
     }
 
-    // 邮箱逻辑
     const emailArea = document.getElementById("detailEmailArea");
     if (item.email && item.email.trim() !== "") {
         document.getElementById("viewEmail").innerText = item.email;
@@ -102,15 +110,18 @@ function closeModals() {
     document.getElementById("pwModal").classList.add("hidden");
 }
 
-// 保存逻辑
+// 保存数据
 document.getElementById("btnSavePw").onclick = function() {
     const s = document.getElementById("inPwSite").value.trim();
     const a = document.getElementById("inPwAcc").value.trim();
     const p = document.getElementById("inPwPass").value.trim();
-    const ph = document.getElementById("inPwPhone").value.trim(); // 新增
-    const em = document.getElementById("inPwEmail").value.trim(); // 新增
+    const ph = document.getElementById("inPwPhone").value.trim();
+    const em = document.getElementById("inPwEmail").value.trim();
 
-    if(!s || !a || !p) return; // 前三项必填
+    if(!s || !a || !p) {
+        alert("项目名称、账号和密码为必填项");
+        return;
+    }
 
     const newData = { site: s, acc: a, pass: p, phone: ph, email: em };
 
@@ -123,13 +134,11 @@ document.getElementById("btnSavePw").onclick = function() {
     localStorage.setItem("box_pw_data", JSON.stringify(pwData));
     closeModals();
     
-    if (currentTab === 'pwDetail') {
-        renderDetails(activeItem);
-    } else {
-        showPage('password', true);
-    }
+    if (currentTab === 'pwDetail') renderDetails(activeItem);
+    else showPage('password', true);
 };
 
+// 按钮绑定
 document.getElementById("btnGoPassword").onclick = () => showPage('password');
 document.getElementById("btnBackHome").onclick = () => window.history.back();
 document.getElementById("btnBackPwList").onclick = () => window.history.back();
@@ -138,7 +147,6 @@ document.getElementById("btnCancelModal").onclick = () => window.history.back();
 document.getElementById("btnAddPw").onclick = function() {
     activeItem = null;
     document.getElementById("pwModalTitle").innerText = "添加密码";
-    // 清空所有输入框
     ["inPwSite", "inPwAcc", "inPwPass", "inPwPhone", "inPwEmail"].forEach(id => {
         document.getElementById(id).value = "";
     });
